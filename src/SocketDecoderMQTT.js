@@ -333,7 +333,21 @@ class SocketDecoderMQTT extends EventEmitter {
                 return;
             }
 
-            const payload = JSON.stringify(data);
+            // 創建簡短的 MQTT 數據格式
+            const simplifiedData = {
+                timestamp: data.timestamp,
+                dataCount: data.dataCount,
+                temp_RSSI: data.temp_RSSI,
+                temp_battery: data.temp_battery,
+                MAC: data.MAC,
+                // 只取第一個數據點作為代表值
+                sampleBendingX: parseFloat(data.MS_BendingX[0].toFixed(6)),
+                sampleBendingY: parseFloat(data.MS_BendingY[0].toFixed(6)),
+                sampleTension: parseFloat(data.MS_Tension[0].toFixed(6)),
+                sampleTorsion: parseFloat(data.MS_Torsion[0].toFixed(6))
+            };
+
+            const payload = JSON.stringify(simplifiedData);
             this.mqttClient.publish(this.mqttTopic, payload, (error) => {
                 if (error) {
                     console.error('MQTT publish error:', error);
