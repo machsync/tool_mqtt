@@ -1,0 +1,23 @@
+{
+  "socket": {
+    "host": "192.168.0.182",
+    "port": 1333,
+    "sampleRate": 10000
+  },
+  "mqtt": {
+    "broker": "mqtt://127.0.0.1:1883",
+    "topic": "testtopic/sensor/data",
+    "publishInterval": 1000
+  },
+  "logging": {
+    "level": "info",
+    "enableConsole": true,
+    "enableFile": false,
+    "logFile": "logs/app.log"
+  },
+  "processing": {
+    "enableAutoReconnect": true,
+    "reconnectDelay": 5000,
+    "maxReconnectAttempts": 10
+  }
+}

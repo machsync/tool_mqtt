@@ -1,0 +1,36 @@
+{
+  "name": "tool-mqtt-decoder",
+  "version": "1.0.0",
+  "description": "A Node.js tool for decoding socket data and publishing to MQTT broker",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/example.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mqtt",
+    "socket",
+    "decoder",
+    "sensor",
+    "iot",
+    "data-processing"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/tool-mqtt-decoder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/tool-mqtt-decoder/issues"
+  },
+  "homepage": "https://github.com/yourusername/tool-mqtt-decoder#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "mqtt": "^5.14.1"
+  },
+  "devDependencies": {}
+}
