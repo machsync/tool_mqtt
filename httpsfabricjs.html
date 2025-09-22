@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fabric.js Multi-Device Time-Series Fixed</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <canvas id="c" width="1000" height="600"></canvas>
+
+  <script>
+    const canvas = new fabric.Canvas("c", { selection: false });
+
+    // 設定背景圖
+    fabric.Image.fromURL("./image002.jpg", function(img) {
+      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+        scaleX: canvas.width / img.width,
+        scaleY: canvas.height / img.height
+      });
+    });
+
+    // 繪製時序圖 (帶刻度)
+    function createTimeSeries(data, width = 150, height = 100, maxVal = 100) {
+      const offCanvas = document.createElement("canvas");
+      offCanvas.width = width;
+      offCanvas.height = height;
+      const ctx = offCanvas.getContext("2d");
+
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, width, height);
+
+      const margin = 10;
+
+      // Y 軸刻度
+      ctx.strokeStyle = "#ccc";
+      ctx.fillStyle = "#333";
+      ctx.font = "10px Arial";
+      const ySteps = 5;
+      for (let i = 0; i <= ySteps; i++) {
+        const y = height - margin - (i / ySteps) * (height - 2 * margin);
+        const val = (maxVal / ySteps) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+        ctx.fillText(val.toFixed(0), 2, y - 2);
+      }
+
+      // X 軸刻度
+      const xSteps = data.length;
+      for (let i = 0; i < xSteps; i++) {
+        const x = (i / (xSteps - 1)) * width;
+        if (i % 5 === 0) {
+          ctx.beginPath();
+          ctx.moveTo(x, height - margin);
+          ctx.lineTo(x, height - margin - 5);
+          ctx.stroke();
+          ctx.fillText(i.toString(), x + 2, height - 2);
+        }
+      }
+
+      // 折線
+      ctx.strokeStyle = "#4a90e2";
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = (i / (data.length - 1)) * width;
+        const y = height - margin - (v / maxVal) * (height - 2 * margin);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // 邊框
+      ctx.strokeStyle = "#333";
+      ctx.strokeRect(0, 0, width, height);
+
+      return offCanvas.toDataURL("image/png");
+    }
+
+    // 建立裝置 (group: chart + label)
+    function addDevice(x, y, id) {
+      const initialData = Array.from({ length: 20 }, () => Math.floor(Math.random() * 80 + 10));
+      const chartImg = createTimeSeries(initialData);
+
+      fabric.Image.fromURL(chartImg, function(img) {
+        img.set({ originX: "left", originY: "top" });
+
+        const label = new fabric.Text(id, {
+          left: 0,
+          top: -20,
+          fontSize: 14,
+          fill: "black",
+          selectable: false,
+          originX: "left",
+          originY: "top"
+        });
+
+        const group = new fabric.Group([img, label], {
+          left: x,
+          top: y,
+          hasControls: false
+        });
+
+        group.deviceId = id;
+        group.timeSeries = initialData;
+
+        canvas.add(group);
+      });
+    }
+
+    // 加三個裝置
+    addDevice(100, 100, "Device1");
+    addDevice(350, 200, "Device2");
+    addDevice(600, 150, "Device3");
+
+    // 模擬資料更新 (不會漂走)
+    setInterval(() => {
+      const devices = ["Device1", "Device2", "Device3"];
+      const deviceId = devices[Math.floor(Math.random() * devices.length)];
+      const value = Math.floor(Math.random() * 100);
+
+      canvas.getObjects().forEach(obj => {
+        if (obj.deviceId === deviceId && obj.timeSeries) {
+          const newSeries = [...obj.timeSeries.slice(1), value];
+          const newChart = createTimeSeries(newSeries);
+
+          fabric.Image.fromURL(newChart, function(newImg) {
+            const oldChart = obj.item(0); // group 的第 0 個物件 (chart)
+            oldChart.setElement(newImg.getElement()); // ✅ 直接替換圖像
+            obj.timeSeries = newSeries;
+
+            obj.addWithUpdate();
+            canvas.requestRenderAll();
+          });
+        }
+      });
+    }, 1000);
+  </script>
+</body>
+</html>
